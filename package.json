@@ -1,0 +1,17 @@
+{
+  "name": "math-quiz-project",
+  "version": "1.0.0",
+  "description": "A web project for testing mental math skills with sequential arithmetic operations.",
+  "main": "src/js/app.js",
+  "scripts": {
+    "start": "live-server",
+    "test": "jest"
+  },
+  "dependencies": {
+    "jest": "^27.0.0",
+    "live-server": "^1.2.1"
+  },
+  "devDependencies": {},
+  "author": "",
+  "license": "ISC"
+}

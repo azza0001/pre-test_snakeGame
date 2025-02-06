@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>pre/post-Test</title>
+    <link rel="stylesheet" href="src/css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="app">
+        <!-- Start Screen -->
+        <div id="start-screen">
+            <h1>Mental Math Quiz</h1>
+            <div class="input-group">
+                <input type="text" 
+                       id="student-name" 
+                       placeholder="Enter your Full Name"
+                       required
+                       autocomplete="off"
+                       spellcheck="false">
+                <input type="text" 
+                       id="student-section" 
+                       placeholder="Your Section (e.g. SCS 1201 A)" 
+                       required
+                       autocomplete="off"
+                       spellcheck="false">
+            </div>
+            <button id="start-button" class="start-btn">Start Quiz</button>
+        </div>
+        
+        <!-- Quiz Screen (initially hidden) -->
+        <div id="quiz-screen" style="display: none;">
+            <div id="countdown"></div>
+            <div id="progress-bar"></div>
+            <div id="question-display" autocomplete="off"></div>
+            <div id="difficulty-display"></div>
+            <div id="quiz-progress" class="quiz-progress"></div>
+        </div>
+    </div>
+
+    <div class="privacy-policy">
+        <div class="policy-text">
+            <h3>Data Privacy Policy</h3>
+            <div class="policy-image">
+                <img src="./DATA-PRIVACY-POLICY-STATEMENT.JPG" alt="Data Privacy" width="500">
+            </div>
+            <p>By participating in this quiz, you agree that we will collect:</p>
+            <ul>
+                <li>Your name and section</li>
+                <li>Quiz responses and scores</li>
+                <li>Time taken for each question</li>
+            </ul>
+            <p>This data will be used solely for:</p>
+            <ul>
+                <li>Academic performance assessment</li>
+                <li>Educational research purposes</li>
+                <li>Improving the quiz system</li>
+            </ul>
+            <p>Your data will be stored securely and not shared with third parties.</p>
+        </div>
+        <div class="consent-checkbox">
+            <label>
+                <input type="checkbox" id="privacy-consent" required>
+                I have read and agree to the data privacy policy
+            </label>
+        </div>
+    </div>
+
+    <a href="https://github.com/azza0001/new-snakeGame" target="_blank" class="github-link">
+        <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub">
+      </a>
+    <!-- Change to type="module" -->
+    <script type="module" src="src/js/app.js"></script>
+</body>
+</html>
