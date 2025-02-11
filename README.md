@@ -3,7 +3,7 @@
 An interactive web application for testing mental math skills across different difficulty levels.
 
 # Pre-Test Game:
-* [Mental Math Quiz Test](https://github.com/azza0001/pre-test_snakeGame)
+* [Mental Math Quiz Test]([https://github.com/azza0001/pre-test_snakeGame](https://azza0001.github.io/pre-test_snakeGame/))
 
 ## Features
 
