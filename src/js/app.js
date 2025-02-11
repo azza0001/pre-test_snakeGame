@@ -299,16 +299,18 @@ function setupQuiz(difficulty) {
             <div class="question-text flash-question">
                 ${formatFractionQuestion(question.question)}
             </div>
-            <input type="text" 
-                   class="answer-input" 
-                   id="current-answer"
-                   required 
-                   autocomplete="off"
-                   pattern="${question.isFraction ? '\\d+/\\d+' : '\\d*\\.?\\d+'}"
-                   placeholder="${question.isFraction ? 'Enter as a/b' : 'Enter answer'}"
-                   title="${question.isFraction ? 'Enter answer as a fraction (e.g., 1/2)' : 'Please enter a number'}"
-                   >
-            <button type="button" class="submit-answer">Next</button>
+            <div class="answer-container">
+                <input type="text" 
+                       class="answer-input" 
+                       id="current-answer"
+                       required 
+                       autocomplete="off"
+                       pattern="${question.isFraction ? '\\d+/\\d+' : '\\d*\\.?\\d+'}"
+                       placeholder="${question.isFraction ? 'Enter as a/b' : 'Enter answer'}"
+                       title="${question.isFraction ? 'Enter answer as a fraction (e.g., 1/2)' : 'Please enter a number'}"
+                       onkeydown="if(event.key === 'Enter') { event.preventDefault(); this.nextElementSibling.click(); }">
+                <button type="button" class="submit-answer">Next</button>
+            </div>
         `;
 
         // Start timer for current question
