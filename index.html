@@ -37,6 +37,18 @@
             <div id="difficulty-display"></div>
             <div id="quiz-progress" class="quiz-progress"></div>
         </div>
+
+        <!-- Completion Screen (initially hidden) -->
+        <div id="completion-screen" style="display: none;">
+            <h2>Quiz Completed!</h2>
+            <!-- ... existing completion content ... -->
+            
+            <a href="https://azza0001.github.io/new-snakeGame/" 
+               target="_blank" 
+               class="snake-game-link">
+                Play Snake Game Now! 🐍
+            </a>
+        </div>
     </div>
 
     <div class="privacy-policy">
@@ -67,10 +79,11 @@
         </div>
     </div>
 
-    <a href="https://github.com/azza0001/new-snakeGame" target="_blank" class="github-link">
-        <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub">
+    <a href="https://azza0001.github.io/new-snakeGame/" target="_blank" class="github-link">
+        <span>Go play the Snake game here.</span>
       </a>
     <!-- Change to type="module" -->
     <script type="module" src="src/js/app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </body>
 </html>

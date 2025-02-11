@@ -86,30 +86,47 @@ function startQuizFlow() {
   startNextDifficulty();
 }
 function startNextDifficulty() {
-    // Save the current results before moving to next difficulty
+    // Save the current results
     const savedResults = currentQuiz ? [...currentQuiz.results] : [];
     if (currentDifficulty) {
         difficultyStatus[currentDifficulty] = true;
     }
+    
     if (difficultyIndex < difficulties.length) {
-        currentDifficulty = difficulties[difficultyIndex]; // Set current difficulty
-        // console.log('Starting difficulty:', currentDifficulty);
-        
-        // Get questions for current difficulty
-        const difficultyQuestions = getRandomQuestions(currentDifficulty, questionsPerDifficulty[currentDifficulty]);
-        // console.log('Questions for difficulty:', difficultyQuestions);
+        const quizScreen = document.getElementById("quiz-screen");
+        // Show throbber with next difficulty level
+        quizScreen.innerHTML = `
+            <div class="throbber-overlay">
+                <div class="throbber">
+                    <div class="throbber-spinner"></div>
+                    <p>Preparing ${difficulties[difficultyIndex]} Level...</p>
+                </div>
+            </div>`;
 
-        if (difficultyQuestions.length === 0) {
-            console.warn(`No questions found for difficulty: ${currentDifficulty}`);
-            difficultyIndex++;
-            startNextDifficulty();
-            return;
-        }
+        // Set up next difficulty after brief transition
+        setTimeout(() => {
+            currentDifficulty = difficulties[difficultyIndex];
+            const difficultyQuestions = getRandomQuestions(currentDifficulty, questionsPerDifficulty[currentDifficulty]);
 
-        // Create new quiz but preserve previous results
-        currentQuiz = new Quiz(difficultyQuestions);
-        currentQuiz.results = savedResults; // Restore saved results
-        setupQuiz(currentDifficulty);
+            if (difficultyQuestions.length === 0) {
+                console.warn(`No questions found for difficulty: ${currentDifficulty}`);
+                difficultyIndex++;
+                startNextDifficulty();
+                return;
+            }
+
+            quizScreen.innerHTML = `
+                    <div id="countdown"></div>
+                    <div id="progress-bar"></div>
+                    <div id="question-display" autocomplete="off"></div>
+                    <div id="difficulty-display"></div>
+                    <div id="quiz-progress" class="quiz-progress"></div>
+                `;
+
+            currentQuiz = new Quiz(difficultyQuestions);
+            currentQuiz.results = savedResults;
+            setupQuiz(currentDifficulty);
+        }, 1000); // Reduced to 1 second for better flow
     } else {
         endQuiz();
     }
@@ -286,9 +303,11 @@ function setupQuiz(difficulty) {
                    class="answer-input" 
                    id="current-answer"
                    required 
-                   step="any"
+                   autocomplete="off"
+                   pattern="${question.isFraction ? '\\d+/\\d+' : '\\d*\\.?\\d+'}"
                    placeholder="${question.isFraction ? 'Enter as a/b' : 'Enter answer'}"
-                   ${question.isFraction ? 'pattern="\\d+/\\d+" title="Enter answer as a fraction (e.g., 1/2)"' : ''}>
+                   title="${question.isFraction ? 'Enter answer as a fraction (e.g., 1/2)' : 'Please enter a number'}"
+                   >
             <button type="button" class="submit-answer">Next</button>
         `;
 
@@ -310,6 +329,11 @@ function setupQuiz(difficulty) {
         // Handle next button click
         const nextButton = questionContainer.querySelector('.submit-answer');
         nextButton.addEventListener('click', () => {
+            const answerInput = document.getElementById('current-answer');
+            if (!answerInput.value.trim()) {
+                alert('Please enter an answer before continuing');
+                return;
+            }
             clearInterval(timer);
             const answer = document.getElementById('current-answer').value;
             const timeSpent = 20 - timeLeft; // Calculate time spent
@@ -442,17 +466,27 @@ function nextStep() {
 }
 
 function showAnswerInput(expression) {
-  const container = document.getElementById("question-display");
-  container.innerHTML = `
-        
-        <input type="number" id="final-answer" placeholder="Enter your answer">
+    const container = document.getElementById("question-display");
+    container.innerHTML = `
+        <input type="number" 
+               id="final-answer" 
+               required
+               min="0"
+               step="1"
+               placeholder="Enter your answer"
+               autocomplete="off">
         <button id="submit-answer">Submit</button>
     `;
 
-  // Add event listener to the submit button
-  document
-    .getElementById("submit-answer")
-    .addEventListener("click", submitHardModeAnswer);
+    // Add validation to submit button
+    document.getElementById("submit-answer").addEventListener("click", () => {
+        const answerInput = document.getElementById("final-answer");
+        if (!answerInput.value.trim()) {
+            alert('Please enter an answer before submitting');
+            return;
+        }
+        submitHardModeAnswer();
+    });
 }
 
 function updateHardMode(timeLeft) {
@@ -643,8 +677,6 @@ function endQuiz() {
         return;
     }
 
-    console.log('Quiz data before sending:', quizData); // Debug log
-
     quizDataTracker.sendToSpreadsheet(quizData)
         .then(() => {
             const resultDiv = document.createElement("div");
@@ -654,9 +686,17 @@ function endQuiz() {
                 <div class="thank-you-image">
                     <img src="./ThankYou.png" alt="Thank You" />
                 </div>
+                <a href="https://azza0001.github.io/new-snakeGame/" 
+                   target="_blank" 
+                   class="snake-game-link">
+                    Play Snake Game 🐍
+                </a>
             `;
             quizScreen.innerHTML = "";
             quizScreen.appendChild(resultDiv);
+            
+            // Trigger confetti effect
+            triggerConfetti();
         })
         .catch(error => {
             console.error('Error submitting quiz:', error);
@@ -666,6 +706,39 @@ function endQuiz() {
                     <p>Please try again later</p>
                 </div>`;
         });
+}
+
+// Add this new function for confetti
+function triggerConfetti() {
+    const duration = 3000;
+    const animationEnd = Date.now() + duration;
+    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 10000 };
+
+    function randomInRange(min, max) {
+        return Math.random() * (max - min) + min;
+    }
+
+    const interval = setInterval(function() {
+        const timeLeft = animationEnd - Date.now();
+
+        if (timeLeft <= 0) {
+            return clearInterval(interval);
+        }
+
+        const particleCount = 50 * (timeLeft / duration);
+        
+        // Since they are random, trigger multiple times with different colors
+        confetti(Object.assign({}, defaults, { 
+            particleCount,
+            origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+            colors: ['#272623', '#d6d2b8', '#6200ee']
+        }));
+        confetti(Object.assign({}, defaults, { 
+            particleCount,
+            origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+            colors: ['#272623', '#d6d2b8', '#6200ee']
+        }));
+    }, 250);
 }
 
 function resetQuiz() {

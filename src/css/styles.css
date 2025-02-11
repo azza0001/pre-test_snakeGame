@@ -853,7 +853,7 @@ input[type="number"] {
     border-top: 3px solid var(--accent-color);
     border-radius: 50%;
     margin: 0 auto 1rem;
-    animation: spin 1s linear infinite;
+    animation: spin 0.05s linear infinite;
 }
 
 .throbber p {
@@ -992,4 +992,136 @@ input[type="number"] {
 
 .continue-btn:hover {
     background-color: var(--accent-color);
+}
+
+.github-link {
+    display: flex;
+    align-items: center;
+    text-decoration: underline;
+    color: #d6d2b8;
+    gap: 8px;
+}
+
+.github-link span {
+    font-family: 'Jost', sans-serif;
+    font-size: 16px;
+}
+
+.github-link:hover span {
+    text-decoration: underline;
+}
+
+.snake-game-link {
+    display: inline-block;
+    margin-top: 2rem;
+    padding: 1rem 2rem;
+    background-color: #272623;
+    color: var(--text-light);
+    text-decoration: #d6d2b8;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+    animation: bounceIn 0.8s ease 1s forwards;
+}
+
+.snake-game-link:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    background-color: #d6d2b8;
+    color: #272623;
+}
+
+@keyframes bounceIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+    50% {
+        opacity: 0.9;
+        transform: scale(1.1);
+    }
+    80% {
+        opacity: 1;
+        transform: scale(0.89);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Throbber */
+
+.throbber-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background: rgba(44, 43, 40, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.throbber {
+    position: relative;
+    text-align: center;
+    padding: 2rem;
+    background: var(--secondary-bg);
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.throbber-spinner {
+    width: 50px;
+    height: 50px;
+    border: 3px solid var(--text-light);
+    border-top: 3px solid var(--accent-color);
+    border-radius: 50%;
+    margin: 0 auto 1rem;
+    animation: spin 1s linear infinite;
+}
+
+.throbber p {
+    color: var(--text-light);
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.end-screen {
+    text-align: center;
+    padding: 2rem;
+    animation: fadeInUp 0.5s ease;
+}
+
+.end-screen h2 {
+    color: var(--text-light);
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    animation: fadeIn 0.5s ease 0.3s both;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 768px) {
+    .throbber {
+        padding: 1.5rem;
+        margin: 1rem;
+    }
 }
