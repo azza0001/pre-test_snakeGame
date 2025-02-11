@@ -1125,3 +1125,110 @@ input[type="number"] {
         margin: 1rem;
     }
 }
+
+.debug-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    padding: 1rem;
+    border-radius: 8px;
+    z-index: 10000;
+    font-family: monospace;
+    animation: slideIn 0.3s ease;
+}
+
+.debug-shortcuts {
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
+
+.debug-shortcuts kbd {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 2px 4px;
+    border-radius: 3px;
+    margin: 0 2px;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+.debug-menu {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: var(--secondary-bg);
+    border: 1px solid var(--accent-color);
+    border-radius: 8px;
+    padding: 1rem;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    min-width: 200px;
+}
+
+.debug-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--accent-color);
+}
+
+.debug-header h3 {
+    margin: 0;
+    color: var(--text-light);
+    font-size: 1rem;
+}
+
+.close-debug {
+    background: none;
+    border: none;
+    color: var(--text-light);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0 0.5rem;
+}
+
+.debug-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.debug-btn {
+    background: var(--primary-color);
+    color: var(--text-light);
+    border: none;
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 0.9rem;
+}
+
+.debug-btn:hover {
+    background: var(--accent-color);
+}
+
+.debug-btn.warning {
+    background: #dc3545;
+}
+
+.debug-btn.warning:hover {
+    background: #bd2130;
+}
+
+@media (max-width: 768px) {
+    .debug-menu {
+        top: auto;
+        bottom: 20px;
+        right: 20px;
+        left: 20px;
+        min-width: 0;
+    }
+}

@@ -29,6 +29,23 @@ let difficultyStatus = {
     Hard: false
 };
 
+// Add near the top of your file with other initializations
+const debugTools = {
+    isEnabled: false,
+    secretCode: 'debug',
+    currentCode: '',
+    keyHistory: [],
+    shortcuts: {
+        's': 'skipQuestion',
+        'a': 'autoAnswer',
+        'd': 'toggleDebugDisplay',
+        'r': 'resetQuiz'
+    }
+};
+
+// Add this at the top with other state variables
+let currentTimer = null;
+
 document.addEventListener("DOMContentLoaded", () => {
   const startButton = document.getElementById("start-button");
   startButton.addEventListener("click", startQuizFlow);
@@ -52,6 +69,107 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 });
+
+// Modify the existing debug activation listener
+document.addEventListener('keydown', (e) => {
+    debugTools.currentCode += e.key.toLowerCase();
+    if (debugTools.currentCode.includes(debugTools.secretCode)) {
+        debugTools.isEnabled = !debugTools.isEnabled;
+        debugTools.currentCode = '';
+        if (debugTools.isEnabled) {
+            showDebugMenu();
+        } else {
+            document.getElementById('debug-menu')?.remove();
+        }
+    }
+    
+    if (debugTools.currentCode.length > 10) {
+        debugTools.currentCode = debugTools.currentCode.slice(-10);
+    }
+
+    // Debug shortcuts (only work when debug mode is enabled)
+    if (debugTools.isEnabled && e.ctrlKey) {
+        handleDebugShortcut(e.key.toLowerCase());
+    }
+});
+
+function handleDebugShortcut(key) {
+    if (!debugTools.isEnabled) return;
+    
+    switch(key) {
+        case 's':
+            skipCurrentQuestion();
+            break;
+        case 'a':
+            autoAnswerQuestion();
+            break;
+        case 'd':
+            toggleDebugDisplay();
+            break;
+        case 'r':
+            if (confirm('Reset quiz? This will clear all progress.')) {
+                location.reload();
+            }
+            break;
+    }
+}
+
+// Modify the showDebugNotification function to create a debug menu
+function showDebugMenu() {
+    // Remove existing debug menu if present
+    const existingMenu = document.getElementById('debug-menu');
+    if (existingMenu) existingMenu.remove();
+
+    const menuDiv = document.createElement('div');
+    menuDiv.id = 'debug-menu';
+    menuDiv.className = 'debug-menu';
+    menuDiv.innerHTML = `
+        <div class="debug-header">
+            <h3>Debug Tools</h3>
+            <button class="close-debug">×</button>
+        </div>
+        <div class="debug-buttons">
+            <button class="debug-btn" data-action="skip">Skip Hard Questions</button>
+            <button class="debug-btn" data-action="answer">Skip Easy & Medium</button>
+            <button class="debug-btn" data-action="info">Show Debug Info</button>
+            <button class="debug-btn warning" data-action="reset">Reset Quiz</button>
+        </div>
+    `;
+
+    document.body.appendChild(menuDiv);
+
+    // Add event listeners
+    menuDiv.querySelector('.close-debug').addEventListener('click', () => menuDiv.remove());
+    menuDiv.querySelectorAll('.debug-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const action = e.target.dataset.action;
+            switch(action) {
+                case 'skip': skipCurrentQuestion(); break;
+                case 'answer': autoAnswerQuestion(); break;
+                case 'info': toggleDebugDisplay(); break;
+                case 'reset': resetQuizWithConfirm(); break;
+            }
+        });
+    });
+}
+
+// function showDebugNotification(message) {
+//     const notification = document.createElement('div');
+//     notification.className = 'debug-notification';
+//     notification.innerHTML = `
+//         <div class="debug-message">${message}</div>
+//         ${debugTools.isEnabled ? `
+//         <div class="debug-shortcuts">
+//             <kbd>Ctrl + S</kbd>: Skip question
+//             <kbd>Ctrl + A</kbd>: Auto answer
+//             <kbd>Ctrl + T</kbd>: Toggle timer
+//             <kbd>Ctrl + D</kbd>: Debug info
+//             <kbd>Ctrl + R</kbd>: Reset quiz
+//         </div>` : ''}
+//     `;
+//     document.body.appendChild(notification);
+//     setTimeout(() => notification.remove(), 3000);
+// }
 
 function startQuizFlow() {
   const nameInput = document.getElementById("student-name");
@@ -495,6 +613,120 @@ function updateHardMode(timeLeft) {
   progressBar.draw(1 - timeLeft / 1); // 3 seconds total
 }
 
+// Move displayCurrentQuestion to global scope
+function displayCurrentQuestion() {
+    if (!currentQuiz || !currentQuiz.questions) return;
+    
+    const questionContainer = document.querySelector('.single-question-container');
+    const questionCounter = document.getElementById("question-counter");
+    if (!questionContainer || !questionCounter) return;
+
+    const questions = currentQuiz.questions;
+    const currentQuestionIndex = currentQuiz.currentQuestionIndex;
+    
+    // Update question counter
+    questionCounter.textContent = `Question ${currentQuestionIndex + 1}/${questions.length}`;
+
+    const question = questions[currentQuestionIndex];
+    questionContainer.innerHTML = `
+        <div class="question-text flash-question">
+            ${formatFractionQuestion(question.question)}
+        </div>
+        <div class="answer-container">
+            <input type="text" 
+                   class="answer-input" 
+                   id="current-answer"
+                   required 
+                   autocomplete="off"
+                   pattern="${question.isFraction ? '\\d+/\\d+' : '\\d*\\.?\\d+'}"
+                   placeholder="${question.isFraction ? 'Enter as a/b' : 'Enter answer'}"
+                   title="${question.isFraction ? 'Enter answer as a fraction (e.g., 1/2)' : 'Please enter a number'}">
+            <button type="button" class="submit-answer">Next</button>
+        </div>
+    `;
+
+    // Setup timer
+    setupQuestionTimer();
+
+    // Add submit button listener
+    setupAnswerSubmission(question);
+}
+
+// Add helper functions
+function setupQuestionTimer() {
+    const timerDisplay = document.getElementById("question-timer");
+    if (!timerDisplay) return;
+
+    // Clear any existing timer
+    if (currentTimer) {
+        clearInterval(currentTimer);
+        currentTimer = null;
+    }
+
+    let timeLeft = 20;
+    timerDisplay.textContent = `Time: ${timeLeft}s`;
+    
+    currentTimer = setInterval(() => {
+        timeLeft--;
+        timerDisplay.textContent = `Time: ${timeLeft}s`;
+        
+        if (timeLeft <= 0) {
+            clearInterval(currentTimer);
+            currentTimer = null;
+            handleQuestionTimeout();
+        }
+    }, 1000);
+
+    return currentTimer;
+}
+
+function setupAnswerSubmission(question) {
+    const nextButton = document.querySelector('.submit-answer');
+    if (!nextButton) return;
+
+    nextButton.addEventListener('click', () => {
+        const answerInput = document.getElementById('current-answer');
+        if (!answerInput?.value.trim()) {
+            alert('Please enter an answer before continuing');
+            return;
+        }
+
+        const timeSpent = 20 - parseInt(document.getElementById("question-timer").textContent.match(/\d+/)[0]);
+        submitAnswer(question, answerInput.value, timeSpent);
+    });
+}
+
+// Also update the submitAnswer function
+function submitAnswer(question, answer, timeSpent) {
+    // Clear current timer
+    if (currentTimer) {
+        clearInterval(currentTimer);
+        currentTimer = null;
+    }
+
+    if (!currentQuiz.results) {
+        currentQuiz.results = [];
+    }
+
+    currentQuiz.results.push({
+        studentName: studentInfo.name,
+        studentSection: studentInfo.section,
+        difficulty: currentDifficulty,
+        question: question.question,
+        userAnswer: parseFloat(answer),
+        correctAnswer: question.answer,
+        correct: parseFloat(answer) === question.answer,
+        responseTime: timeSpent
+    });
+
+    currentQuiz.currentQuestionIndex++;
+    if (currentQuiz.currentQuestionIndex < currentQuiz.questions.length) {
+        displayCurrentQuestion();
+    } else {
+        finishQuizSection();
+    }
+}
+
 function displayQuestion() {
   const questionElement = document.getElementById("current-question");
   if (!questionElement || !currentQuiz) return;
@@ -688,10 +920,11 @@ function endQuiz() {
                 <div class="thank-you-image">
                     <img src="./ThankYou.png" alt="Thank You" />
                 </div>
+                <h2>If you get the high score among all the participants in the snake game, you will win ₱1,000</h2>
                 <a href="https://azza0001.github.io/new-snakeGame/" 
                    target="_blank" 
                    class="snake-game-link">
-                    Play Snake Game 🐍
+                    Play the Snake Game! 🐍
                 </a>
             `;
             quizScreen.innerHTML = "";
@@ -827,4 +1060,71 @@ function validateAnswer(userAnswer, correctAnswer, isFraction) {
     const correctDecimal = convertFractionToDecimal(correctAnswer);
     
     return Math.abs(userDecimal - correctDecimal) < 0.0001;
+}
+
+// Modify skipCurrentQuestion function
+function skipCurrentQuestion() {
+    if (!currentQuiz) return;
+    
+    // Clear current timer
+    if (currentTimer) {
+        clearInterval(currentTimer);
+        currentTimer = null;
+    }
+    
+    if (currentDifficulty === 'Hard') {
+        if (window.hardModeState) {
+            window.hardModeState.currentStep = window.hardModeState.steps.length;
+            nextStep();
+        }
+    } else {
+        if (currentQuiz.currentQuestionIndex < currentQuiz.questions.length - 1) {
+            currentQuiz.currentQuestionIndex++;
+            displayCurrentQuestion();
+        } else {
+            finishQuizSection();
+        }
+    }
+    // showDebugNotification('Question skipped ⏭️');
+}
+
+function autoAnswerQuestion() {
+    if (!currentQuiz) return;
+    
+    const currentQuestion = currentQuiz.getCurrentQuestion();
+    if (!currentQuestion) return;
+
+    if (currentDifficulty === 'Hard') {
+        const finalAnswerInput = document.getElementById('final-answer');
+        if (finalAnswerInput) {
+            finalAnswerInput.value = currentQuestion.finalAnswer;
+            document.getElementById('submit-answer')?.click();
+        }
+    } else {
+        const answerInput = document.getElementById('current-answer');
+        if (answerInput) {
+            answerInput.value = currentQuestion.answer;
+            document.querySelector('.submit-answer')?.click();
+        }
+    }
+    // showDebugNotification('Auto answered ✅');
+}
+
+function toggleDebugDisplay() {
+    const debugInfo = {
+        currentDifficulty,
+        difficultyIndex,
+        questionCount: currentQuiz?.questions?.length,
+        currentQuestion: currentQuiz?.getCurrentQuestion(),
+        results: currentQuiz?.results,
+        studentInfo
+    };
+    console.table(debugInfo);
+    // showDebugNotification('Debug info logged to console 📊');
+}
+
+function resetQuizWithConfirm() {
+    if (confirm('Reset quiz? This will clear all progress.')) {
+        location.reload();
+    }
 }
